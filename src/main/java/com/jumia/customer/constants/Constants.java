@@ -1,5 +1,6 @@
 package com.jumia.customer.constants;
 
 public interface Constants {
-    public final static Integer listItemsCount = 10;
+    Integer listItemsCount = 10;
+    String likeOperator = "%";
 }

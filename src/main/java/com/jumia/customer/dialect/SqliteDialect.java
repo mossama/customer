@@ -4,6 +4,9 @@ import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.function.SQLFunctionTemplate;
 import org.hibernate.dialect.function.StandardSQLFunction;
 import org.hibernate.dialect.function.VarArgsSQLFunction;
+import org.hibernate.dialect.pagination.AbstractLimitHandler;
+import org.hibernate.dialect.pagination.LimitHelper;
+import org.hibernate.engine.spi.RowSelection;
 import org.hibernate.type.StringType;
 import org.springframework.stereotype.Component;
 
@@ -74,16 +77,20 @@ public class SqliteDialect extends Dialect {
         return "select last_insert_rowid()";
     }
 
-    public boolean supportsLimit() {
-        return true;
-    }
 
-    protected String getLimitString(String query, boolean hasOffset) {
-        return new StringBuffer(query.length()+20).
-                append(query).
-                append(hasOffset ? " limit ? offset ?" : " limit ?").
-                toString();
-    }
+    // limit/offset support ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    private static final AbstractLimitHandler LIMIT_HANDLER = new AbstractLimitHandler() {
+
+        @Override
+
+        public String processSql(String sql, RowSelection selection) {
+
+            final boolean hasOffset = LimitHelper.hasFirstRow(selection);
+
+            return sql + (hasOffset ? " limit ? offset ?" : " limit ?");
+
+        }};
 
     public boolean supportsTemporaryTables() {
         return true;
